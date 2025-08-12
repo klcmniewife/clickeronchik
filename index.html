@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Кликер с заданиями</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f0f0f0;
+    margin: 0;
+    padding: 0;
+  }
+  header {
+    background: #333;
+    color: #fff;
+    padding: 10px;
+    text-align: center;
+  }
+  .tabs {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+  }
+  .tabs button {
+    background-color: #555;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 5px;
+    cursor: pointer;
+    border-radius: 5px;
+    font-size: 16px;
+    transition: background-color 0.3s;
+  }
+  .tabs button:hover, .tabs button.active {
+    background-color: #007bff;
+  }
+  .tab-content {
+    display: none;
+    padding: 20px;
+  }
+  .tab-content.active {
+    display: block;
+  }
+
+  /* Стиль для кнопок */
+button {
+  background-color:#4CAF50; /* Зеленый */
+  border:none; 
+  color:white; 
+  padding:15px; 
+  text-align:center; 
+  text-decoration:none; 
+  display:inline-block; 
+  font-size:16px; 
+  margin:10px; 
+  cursor:pointer; 
+ border-radius:8px; 
+ transition: background-color 0.3s, transform 0.2s;}
+button:hover {background-color:#45a049; transform:scale(1.05);}
+
+/* Стиль для баланса */
+#balance {
+ font-size:24px; font-weight:bold; margin-bottom:20px;
+
+/* Место для изображения */
+#click-image {
+ cursor:pointer; display:block; margin:auto; max-width:200px; border-radius:10px;}
+#click-image:hover {transform: scale(1.05); transition:.3s;}
+</style>
+</head>
+<body>
+
+<header>
+<h1>Кликер с заданиями</h1>
+<div>Баланс DEGS : <span id="balance">0</span></div>
+</header>
+
+<div class="tabs">
+ <button data-tab="game" class="active">Играть</button>
+ <button data-tab="tasks">Задания</button>
+</div>
+
+<div id="game" class="tab-content active">
+ <!-- Место для вашего изображения -->
+ <img id="click-image" src="" alt="Кликабельное изображение" />
+</div>
+
+<div id="tasks" class="tab-content">
+ <h2>Задания</h2>
+ <ul>
+   <li>Подписаться на Telegram канал за 500DEGS (<a id="https://t.me/cryptoinfosiki" href="#" target="_blank">ссылка на канал</a>)</li>
+ </ul>
+</div>
+
+<!-- Место для сообщений -->
+<div style="text-align:center;margin-top:20px;">
+ <div id="game-message"></div>
+</div>
+
+<script>
+// --- Инициализация данных ---
+let data = JSON.parse(localStorage.getItem('gameData')) || {
+ balance :0,
+ x2 : false,
+ autoIncrement : false,
+ autoIntervalId : null,
+ clickCount :0,
+ subscribed:false
+};
+
+// Инициализация переменной clickCount из данных
+let clickCount = data.clickCount ||0;
+
+// --- Вставьте сюда ссылку на ваше изображение ---
+const imageSrc = 'https://torforex.com/wp-content/uploads/2024/08/img_5895.png'; // <-- замените на ваше изображение
+document.getElementById('click-image').src = imageSrc;
+
+// --- Обновление баланса ---
+const balanceSpan = document.getElementById('balance');
+function saveData() { localStorage.setItem('gameData', JSON.stringify(data)); }
+function updateBalance() { balanceSpan.textContent = data.balance.toFixed(0); }
+updateBalance();
+
+// --- Вкладки ---
+const tabsBtn = document.querySelectorAll('.tabs button');
+const tabContents = document.querySelectorAll('.tab-content');
+tabsBtn.forEach(btn => {
+ btn.addEventListener('click', () => {
+   tabsBtn.forEach(b => b.classList.remove('active'));
+   btn.classList.add('active');
+   const target = btn.dataset.tab;
+   tabContents.forEach(tc => {
+     tc.classList.remove('active');
+     if(tc.id===target) tc.classList.add('active');
+   });
+ });
+});
+
+// --- Кликер ---
+const clickImage = document.getElementById('click-image');
+
+clickImage.addEventListener('click', (event) => {
+ let gain = data.x2 ?2 :1;
+
+ data.balance += gain;
+
+ clickCount++;
+ data.clickCount=clickCount;
+
+ saveData();
+ updateBalance();
+
+ // Визуальный эффект при клике
+ const smallImg = document.createElement('img');
+ smallImg.src='https://torforex.com/wp-content/uploads/2024/08/img_5895.png'; // место для вашего изображения при клике (оставьте пустым или вставьте ссылку)
+ smallImg.style.position='absolute';
+ smallImg.style.width='30px';
+ smallImg.style.height='30px';
+ smallImg.style.left= event.pageX + 'px';
+ smallImg.style.top= event.pageY + 'px';
+ smallImg.style.zIndex='9999';
+
+ document.body.appendChild(smallImg);
+ setTimeout(()=>{smallImg.remove()},500);
+});
+
+// --- Казино ---
+const casinoBtn=document.createElement('button');
+casinoBtn.textContent='Играть в казино';
+document.body.appendChild(casinoBtn);
+const casinoResultDiv=document.createElement('div');
+casinoResultDiv.id='casino-result';
+document.body.appendChild(casinoResultDiv);
+
+casinoBtn.addEventListener('click', () => {
+ const betAmount=100;
+
+ if(data.balance<betAmount){
+   casinoResultDiv.textContent='Недостаточно денег!';
+   return;}
+ data.balance -= betAmount;
+
+ const winChance=Math.random();
+
+ if(winChance<0.5){
+   // проигрыш
+   casinoResultDiv.textContent='Проигрыш!';
+   saveData();
+   updateBalance();
+ } else{
+   // выигрыш
+   const winAmount=betAmount*1.5;// выигрыш в полтора раза больше ставки
+   data.balance+=winAmount;
+
+   casinoResultDiv.textContent='Вы выиграли '+winAmount+' DEGS!';
+   saveData();
+   updateBalance();
+ }
+});
+
+// --- Задание подписки ---
+const telegramLink=document.getElementById('telegram-link');
+
+let hasSubscribed=data.subscribed || false;
+
+telegramLink.href='#'; // вставьте сюда ваш URL канала
+// например, 'https://t.me/yourchannel'
+
+// Обновите ссылку на ваш канал
+// Например:
+telegramLink.href='https://t.me/cryptoinfosiki';
+
+telegramLink.addEventListener('click', ()=>{
+
+ if(!hasSubscribed){
+	const bonus=500; // бонус за подписку
+
+	if(data.balance>=bonus){
+		data.balance+=bonus; // добавляем бонус
+		data.subscribed=true; // отмечаем что подписка выполнена
+		document.getElementById('game-message').textContent='Вы получили '+bonus+' DEGS за подписку!';
+	} else{
+		document.getElementById('game-message').textContent='Недостаточно денег для бонуса!';
+		return;}
+ } else{
+	 document.getElementById('game-message').textContent='Вы уже подписаны.';
+ }
+
+ saveData();
+ updateBalance();
+});
+
+// --- Дополнительные функции ---
+window.onload=function() { updateBalance(); };
+</script>
+
+</body>
+</html>
